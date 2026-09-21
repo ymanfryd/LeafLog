@@ -10,5 +10,6 @@ module.exports = {
       },
     ],
     'react-native-worklets/plugin',
+    ['babel-plugin-inline-import', {extensions: ['.sql']}],
   ],
 };
