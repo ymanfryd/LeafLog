@@ -1,45 +1,40 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {StyleSheet, Text, View} from 'react-native';
+import {colors} from '@/theme';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const queryClient = new QueryClient({
+  defaultOptions: {queries: {staleTime: 1000 * 60}},
+});
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <GestureHandlerRootView style={styles.root}>
+        <QueryClientProvider client={queryClient}>
+          <View style={styles.container}>
+            <Text style={styles.title}>LeafLog</Text>
+          </View>
+        </QueryClientProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
+export default App;
 
 const styles = StyleSheet.create({
+  root: {flex: 1},
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: '700',
   },
 });
-
-export default App;
