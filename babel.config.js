@@ -9,7 +9,14 @@ module.exports = {
         extensions: ['.ios.js', '.android.js', '.js', '.ts', '.tsx', '.json'],
       },
     ],
-    'react-native-worklets/plugin',
+    [
+      'module:react-native-dotenv',
+      {
+        moduleName: '@env',
+        path: '.env',
+      },
+    ],
     ['babel-plugin-inline-import', {extensions: ['.sql']}],
+    'react-native-worklets/plugin',
   ],
 };
