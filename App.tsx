@@ -1,21 +1,21 @@
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {StyleSheet, Text, View} from 'react-native';
-import {colors} from '@/theme';
+import {StyleSheet} from 'react-native';
+import {createStaticNavigation} from '@react-navigation/native';
+import {RootTabs} from '@/navigation/RootTabs';
 
 const queryClient = new QueryClient({
   defaultOptions: {queries: {staleTime: 1000 * 60}},
 });
+const Navigation = createStaticNavigation(RootTabs);
 
 function App() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.root}>
         <QueryClientProvider client={queryClient}>
-          <View style={styles.container}>
-            <Text style={styles.title}>LeafLog</Text>
-          </View>
+          <Navigation />
         </QueryClientProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
@@ -26,15 +26,4 @@ export default App;
 
 const styles = StyleSheet.create({
   root: {flex: 1},
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  title: {
-    color: colors.text,
-    fontSize: 32,
-    fontWeight: '700',
-  },
 });
