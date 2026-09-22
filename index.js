@@ -2,6 +2,7 @@
  * @format
  */
 
+import 'react-native-get-random-values';
 import 'web-streams-polyfill/polyfill';
 
 import {AppRegistry} from 'react-native';

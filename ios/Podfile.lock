@@ -14,11 +14,13 @@ PODS:
   - hermes-engine (250829098.0.17):
     - hermes-engine/Pre-built (= 250829098.0.17)
   - hermes-engine/Pre-built (250829098.0.17)
-  - op-sqlite (18.2.5):
+  - op-sqlite (14.1.4):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
+    - React
     - React-bridging
+    - React-callinvoker
     - React-Core
     - React-Core-prebuilt
     - React-debug
@@ -2227,7 +2229,7 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: 63c5db7d529c36335fada6582fd293ae2a105d77
-  op-sqlite: 70098be822743ace5edcb8894d6ff7c1b746ee1f
+  op-sqlite: 750f9e726749ca76dc93295636a29bfe2b84497b
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: 5cc865306ce4974b7a57ddbc575fd1f3fef41957
   RCTRequired: ea6f2c41f2670961ce9a48a4bf17a190dd53e493
