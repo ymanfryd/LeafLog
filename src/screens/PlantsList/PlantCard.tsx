@@ -1,4 +1,4 @@
-import {Pressable, Text, View, StyleSheet} from 'react-native';
+import {Pressable, Text, View, StyleSheet, Image} from 'react-native';
 import {Plant} from '@/db/schema';
 import {colors, radius, spacing} from '@/theme';
 
@@ -12,7 +12,12 @@ export default function PlantCard({
   return (
     <View style={styles.card}>
       <View style={styles.info}>
-        <Text style={styles.emoji}>🌿</Text>
+        {item.photoUri ? (
+          <Image source={{uri: item.photoUri}} width={40} height={40} />
+        ) : (
+          <Text style={styles.emoji}>🌿</Text>
+        )}
+
         <View>
           <Text style={styles.name}>{item.name}</Text>
           {item.species && <Text style={styles.species}>{item.species}</Text>}

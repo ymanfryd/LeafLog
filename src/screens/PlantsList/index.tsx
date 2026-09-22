@@ -4,31 +4,27 @@ import {colors, spacing} from '@/theme';
 import {usePlants} from '@/hooks/usePlants';
 import {FlashList} from '@shopify/flash-list';
 import PlantCard from './PlantCard';
-import {useCreatePlant} from '@/hooks/useCreatePlant';
 import {useDeletePlant} from '@/hooks/useDeletePlant';
 import IconButton from '@/ui/IconButton';
+import {StaticParamList, useNavigation} from '@react-navigation/native';
+import PlantsStack from '@/navigation/PlantsStack';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+
+type PlantsStackParams = StaticParamList<typeof PlantsStack>;
 
 const PlantsList = () => {
   const {data: plants, isLoading, isError} = usePlants();
-  const {mutate: createPlant, isPending} = useCreatePlant();
   const {mutate: deletePlant} = useDeletePlant();
-
-  const seed = () => {
-    createPlant({
-      name: 'Sample Ficus',
-      species: 'Ficus Elastica',
-      commonName: 'Rubber Plant',
-      photoUri: null,
-      wateringIntervalDays: 7,
-      lightRequirement: 'medium',
-      humidityRequirement: 'medium',
-      notes: null,
-    });
-  };
+  const navigation =
+    useNavigation<NativeStackNavigationProp<PlantsStackParams>>();
 
   return (
-    <ScreenLayout title="Plants" rightSlot={<IconButton onPress={seed} />}>
-      {isLoading || isPending ? (
+    <ScreenLayout
+      title="Plants"
+      rightSlot={
+        <IconButton onPress={() => navigation.navigate('AddPlant')} />
+      }>
+      {isLoading ? (
         <ActivityIndicator color={colors.primary} />
       ) : isError ? (
         <Text style={styles.errorText}>Error while getting plants</Text>
