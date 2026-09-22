@@ -1,7 +1,13 @@
 import {colors, radius} from '@/theme';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
-export default function IconButton({onPress}: {onPress: () => void}) {
+export default function IconButton({
+  onPress,
+  icon,
+}: {
+  onPress: () => void;
+  icon?: string;
+}) {
   return (
     <Pressable
       style={({pressed}) => [
@@ -10,7 +16,7 @@ export default function IconButton({onPress}: {onPress: () => void}) {
       ]}
       onPress={onPress}
       hitSlop={8}>
-      <Text style={styles.iconButtonText}>+</Text>
+      <Text style={styles.iconButtonText}>{icon ?? '+'}</Text>
     </Pressable>
   );
 }
