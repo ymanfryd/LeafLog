@@ -1,6 +1,6 @@
 import {Pressable, Text, View, StyleSheet, Image} from 'react-native';
-import {Plant} from '@/db/schema';
 import {colors, radius, spacing} from '@/theme';
+import {Plant} from '@/db/types';
 
 export default function PlantCard({
   item,

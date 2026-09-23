@@ -1,10 +1,8 @@
 import {open} from '@op-engineering/op-sqlite';
-import {drizzle} from 'drizzle-orm/op-sqlite';
-import * as schema from './schema';
 
-const sqlite = open({name: 'leaflog.db'});
+export const db = open({name: 'leaflog.db'});
 
-sqlite.execute(`
+db.execute(`
   CREATE TABLE IF NOT EXISTS plants (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
@@ -18,5 +16,3 @@ sqlite.execute(`
     notes TEXT
   );
 `);
-
-export const db = drizzle(sqlite, {schema});
