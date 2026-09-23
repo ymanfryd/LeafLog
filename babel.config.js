@@ -16,7 +16,6 @@ module.exports = {
         path: '.env',
       },
     ],
-    ['babel-plugin-inline-import', {extensions: ['.sql']}],
     'react-native-worklets/plugin',
   ],
 };

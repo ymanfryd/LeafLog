@@ -9,7 +9,7 @@ const defaultConfig = getDefaultConfig(__dirname);
  */
 const config = {
   resolver: {
-    sourceExts: [...defaultConfig.resolver.sourceExts, 'sql'],
+    sourceExts: [...defaultConfig.resolver.sourceExts],
   },
 };
 

@@ -1,32 +1,73 @@
 import {db} from '@/db/client';
-import {plants, type Plant, type NewPlant} from '@/db/schema';
-import {desc, eq} from 'drizzle-orm';
 import {v4 as uuidv4} from 'uuid';
+import type {Plant, NewPlant} from '@/db/types';
+
+function rowToPlant(row: any): Plant {
+  return {
+    id: row.id,
+    name: row.name,
+    species: row.species,
+    commonName: row.common_name,
+    photoUri: row.photo_uri,
+    createdAt: row.created_at,
+    wateringIntervalDays: row.watering_interval_days,
+    lightRequirement: row.light_requirement,
+    humidityRequirement: row.humidity_requirement,
+    notes: row.notes,
+  };
+}
 
 export async function getPlants(): Promise<Plant[]> {
-  return db.select().from(plants).orderBy(desc(plants.createdAt));
+  const {rows} = await db.execute(
+    'SELECT * FROM plants ORDER BY created_at DESC',
+  );
+  return (rows ?? []).map(rowToPlant);
 }
 
 export async function getPlantById(id: string): Promise<Plant | null> {
-  const rows = await db.select().from(plants).where(eq(plants.id, id)).limit(1);
-  return rows[0] ?? null;
+  const {rows} = await db.execute('SELECT * FROM plants WHERE id = ? LIMIT 1', [
+    id,
+  ]);
+  const first = rows?.[0];
+  return first ? rowToPlant(first) : null;
 }
 
-export async function createPlant(
-  input: Omit<NewPlant, 'id' | 'createdAt'>,
-): Promise<Plant> {
-  const plant: NewPlant = {
-    id: uuidv4(),
-    createdAt: new Date(),
-    ...input,
+export async function createPlant(input: NewPlant): Promise<Plant> {
+  const id = uuidv4();
+  const createdAt = Date.now();
+  const plant: Plant = {
+    id,
+    name: input.name,
+    species: input.species ?? null,
+    commonName: input.commonName ?? null,
+    photoUri: input.photoUri ?? null,
+    createdAt,
+    wateringIntervalDays: input.wateringIntervalDays ?? null,
+    lightRequirement: input.lightRequirement ?? null,
+    humidityRequirement: input.humidityRequirement ?? null,
+    notes: input.notes ?? null,
   };
-  const [row] = await db.insert(plants).values(plant).returning();
-  if (!row) {
-    throw new Error('Failed to insert plant');
-  }
-  return row;
+  await db.execute(
+    `INSERT INTO plants (
+      id, name, species, common_name, photo_uri, created_at,
+      watering_interval_days, light_requirement, humidity_requirement, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      plant.id,
+      plant.name,
+      plant.species,
+      plant.commonName,
+      plant.photoUri,
+      plant.createdAt,
+      plant.wateringIntervalDays,
+      plant.lightRequirement,
+      plant.humidityRequirement,
+      plant.notes,
+    ],
+  );
+  return plant;
 }
 
 export async function deletePlant(id: string): Promise<void> {
-  await db.delete(plants).where(eq(plants.id, id));
+  await db.execute('DELETE FROM plants WHERE id = ?', [id]);
 }
