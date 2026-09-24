@@ -1,3 +1,5 @@
+import {analyzePlant} from '@/ai/plantAnalysis';
+import {PlantAnalysis} from '@/ai/types';
 import {useCreatePlant} from '@/hooks/useCreatePlant';
 import {colors, radius, spacing} from '@/theme';
 import Button from '@/ui/Button';
@@ -7,8 +9,10 @@ import {savePhoto} from '@/utils/photoStorage';
 import {useNavigation} from '@react-navigation/native';
 import {useState} from 'react';
 import {
+  ActivityIndicator,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,17 +20,79 @@ import {
 } from 'react-native';
 import {launchCamera, type Asset} from 'react-native-image-picker';
 
+function Row({label, value}: {label: string; value: string}) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={styles.rowValue}>{value}</Text>
+    </View>
+  );
+}
+
+function AnalysisCard({analysis}: {analysis: PlantAnalysis}) {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{analysis.species}</Text>
+      <Row
+        label="Watering"
+        value={`every ${analysis.wateringIntervalDays} days`}
+      />
+      <Row label="Light" value={analysis.lightRequirement} />
+      <Row label="Humidity" value={analysis.humidityRequirement} />
+      {analysis.issues.length > 0 && (
+        <View style={styles.issues}>
+          <Text style={styles.issuesTitle}>Issues detected</Text>
+          {analysis.issues.map((issue, i) => (
+            <Text key={i} style={styles.issueText}>
+              • {issue.issue} — {issue.advice}
+            </Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 function AddPlant() {
   const navigation = useNavigation();
   const {mutateAsync: createPlant, isPending} = useCreatePlant();
   const [chosenPhoto, setChosenPhoto] = useState<Asset | null>(null);
+  const [analysis, setAnalysis] = useState<PlantAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [retryAttempt, setRetryAttempt] = useState(0);
+
+  async function runAnalysis(base64: string) {
+    setAnalysis(null);
+    setAnalyzeError(null);
+    setRetryAttempt(0);
+    setAnalyzing(true);
+    try {
+      const result = await analyzePlant(base64, {
+        onRetry: setRetryAttempt,
+      });
+      setAnalysis(result);
+      setName(prev => prev.trim() || result.commonName);
+    } catch (e) {
+      setAnalyzeError(e instanceof Error ? e.message : 'Analysis failed');
+    } finally {
+      setAnalyzing(false);
+      setRetryAttempt(0);
+    }
+  }
+
   const onTakePhoto = async () => {
     const result = await launchCamera({
       mediaType: 'photo',
       quality: 0.8,
+      includeBase64: true,
     });
-    if (result.assets && result.assets[0]) setChosenPhoto(result.assets[0]);
+    const asset = result.assets?.[0];
+    if (!asset?.uri || !asset.base64) return;
+
+    setChosenPhoto(asset);
+    await runAnalysis(asset.base64);
   };
 
   async function onSave() {
@@ -41,7 +107,7 @@ function AddPlant() {
       title={'Add plant'}
       rightSlot={<IconButton onPress={navigation.goBack} icon={'x'} />}>
       {chosenPhoto ? (
-        <View style={styles.form}>
+        <ScrollView contentContainerStyle={styles.form}>
           <Image source={{uri: chosenPhoto.uri}} style={styles.photo} />
           <Text style={styles.label}>Name</Text>
           <TextInput
@@ -51,13 +117,39 @@ function AddPlant() {
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
-          <Button
-            text={'Save'}
-            onPress={onSave}
-            loading={isPending}
-            disabled={!name.trim() || isPending}
-          />
-        </View>
+          {analyzing && (
+            <View style={styles.analyzing}>
+              <ActivityIndicator color={colors.primary} />
+              <Text style={styles.analyzingText}>
+                {retryAttempt === 0
+                  ? 'Analyzing plant…'
+                  : `Server busy, retrying (${retryAttempt}/3)…`}
+              </Text>
+            </View>
+          )}
+          {analyzeError && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{analyzeError}</Text>
+              <Button
+                text="Try again"
+                onPress={() => {
+                  if (chosenPhoto?.base64) runAnalysis(chosenPhoto.base64);
+                }}
+              />
+            </View>
+          )}
+          {analysis && (
+            <>
+              <AnalysisCard analysis={analysis} />
+              <Button
+                text={'Save'}
+                onPress={onSave}
+                loading={isPending}
+                disabled={!name.trim() || isPending}
+              />
+            </>
+          )}
+        </ScrollView>
       ) : (
         <Pressable style={styles.pressableContainer} onPress={onTakePhoto}>
           <Text style={styles.emptyText}>Tap to take photo</Text>
@@ -77,6 +169,9 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: colors.textMuted,
+  },
+  errorText: {
+    color: colors.danger,
   },
   photo: {
     width: '100%',
@@ -104,5 +199,66 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: '600',
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  cardTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+  },
+  rowLabel: {
+    color: colors.textMuted,
+    fontSize: 13,
+  },
+  rowValue: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  issues: {
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.textMuted,
+    gap: spacing.xs,
+  },
+  issuesTitle: {
+    color: colors.danger,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  issueText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  analyzing: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  analyzingText: {
+    color: colors.textMuted,
+    fontSize: 14,
+  },
+  errorBox: {
+    padding: spacing.md,
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
   },
 });
