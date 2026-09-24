@@ -1,66 +1,56 @@
-import {Pressable, Text, View, StyleSheet, Image} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import {colors, radius, spacing} from '@/theme';
-import {Plant} from '@/db/types';
+import type {Plant} from '@/db/types';
 
-export default function PlantCard({
-  item,
-  onDelete,
-}: {
+type Props = {
   item: Plant;
-  onDelete: () => void;
-}) {
-  return (
-    <View style={styles.card}>
-      <View style={styles.info}>
-        {item.photoUri ? (
-          <Image source={{uri: item.photoUri}} width={40} height={40} />
-        ) : (
-          <Text style={styles.emoji}>🌿</Text>
-        )}
+  onPress: () => void;
+};
 
-        <View>
-          <Text style={styles.name}>{item.name}</Text>
-          {item.species && <Text style={styles.species}>{item.species}</Text>}
+export default function PlantCard({item, onPress}: Props) {
+  return (
+    <Pressable style={styles.card} onPress={onPress}>
+      {item.photoUri ? (
+        <Image source={{uri: item.photoUri}} style={styles.photo} />
+      ) : (
+        <View style={[styles.photo, styles.photoPlaceholder]}>
+          <Text style={styles.placeholderEmoji}>🌿</Text>
         </View>
+      )}
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={1}>
+          {item.name}
+        </Text>
       </View>
-      <Pressable onPress={onDelete}>
-        <Text style={styles.delete}>Delete</Text>
-      </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flex: 1,
     backgroundColor: colors.surface,
-    padding: spacing.md,
     borderRadius: radius.md,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    margin: spacing.xs,
+    overflow: 'hidden',
+  },
+  photo: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: colors.surfaceElevated,
+  },
+  photoPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderEmoji: {
+    fontSize: 48,
   },
   info: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  emoji: {
-    fontSize: 32,
+    padding: spacing.sm,
   },
   name: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  species: {
-    color: colors.textMuted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  delete: {
-    color: colors.danger,
     fontSize: 14,
     fontWeight: '600',
   },

@@ -4,7 +4,6 @@ import {colors, spacing} from '@/theme';
 import {usePlants} from '@/hooks/usePlants';
 import {FlashList} from '@shopify/flash-list';
 import PlantCard from './PlantCard';
-import {useDeletePlant} from '@/hooks/useDeletePlant';
 import IconButton from '@/ui/IconButton';
 import {StaticParamList, useNavigation} from '@react-navigation/native';
 import PlantsStack from '@/navigation/PlantsStack';
@@ -13,11 +12,9 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 type PlantsStackParams = StaticParamList<typeof PlantsStack>;
 
 const PlantsList = () => {
-  const {data: plants, isLoading, isError, error} = usePlants();
-  const {mutate: deletePlant} = useDeletePlant();
+  const {data: plants, isLoading, isError} = usePlants();
   const navigation =
     useNavigation<NativeStackNavigationProp<PlantsStackParams>>();
-  if (error) console.error(error);
 
   return (
     <ScreenLayout
@@ -33,8 +30,13 @@ const PlantsList = () => {
         <FlashList
           data={plants}
           keyExtractor={item => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.gridContent}
           renderItem={({item}) => (
-            <PlantCard item={item} onDelete={() => deletePlant(item.id)} />
+            <PlantCard
+              item={item}
+              onPress={() => navigation.navigate('PlantDetail', {id: item.id})}
+            />
           )}
         />
       ) : (
@@ -69,5 +71,8 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 14,
     textAlign: 'center',
+  },
+  gridContent: {
+    padding: spacing.sm,
   },
 });

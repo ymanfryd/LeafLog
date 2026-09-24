@@ -3,7 +3,7 @@ import {PlantAnalysis} from '@/ai/types';
 import {useCreatePlant} from '@/hooks/useCreatePlant';
 import {colors, radius, spacing} from '@/theme';
 import Button from '@/ui/Button';
-import IconButton from '@/ui/IconButton';
+import CloseButton from '@/ui/CloseButton';
 import ScreenLayout from '@/ui/ScreenLayout';
 import {savePhoto} from '@/utils/photoStorage';
 import {useNavigation} from '@react-navigation/native';
@@ -105,7 +105,7 @@ function AddPlant() {
   return (
     <ScreenLayout
       title={'Add plant'}
-      rightSlot={<IconButton onPress={navigation.goBack} icon={'x'} />}>
+      rightSlot={<CloseButton onPress={navigation.goBack} />}>
       {chosenPhoto ? (
         <ScrollView contentContainerStyle={styles.form}>
           <Image source={{uri: chosenPhoto.uri}} style={styles.photo} />
