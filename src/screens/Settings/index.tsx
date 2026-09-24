@@ -1,17 +1,27 @@
 import {useState} from 'react';
-import {StyleSheet, Text, TextInput, View} from 'react-native';
+import {
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import ScreenLayout from '@/ui/ScreenLayout';
 import Button from '@/ui/Button';
 import {askQuestion} from '@/ai/askQuestion';
 import {colors, radius, spacing} from '@/theme';
+import {useTranslation} from 'react-i18next';
 
 function Settings() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {t} = useTranslation();
 
   const onAsk = async () => {
+    Keyboard.dismiss();
     setLoading(true);
     setError(null);
     setAnswer('');
@@ -26,26 +36,37 @@ function Settings() {
   };
 
   return (
-    <ScreenLayout title="Settings">
-      <View style={styles.container}>
-        <Text style={styles.label}>Ask AI about plants</Text>
+    <ScreenLayout title={t('settings.title')}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag">
+        <Text style={styles.label}>{t('settings.askLabel')}</Text>
         <TextInput
           value={question}
           onChangeText={setQuestion}
-          placeholder="Why are my ficus leaves yellow?"
+          placeholder={t('settings.askPlaceholder')}
           placeholderTextColor={colors.textMuted}
           style={styles.input}
           multiline
         />
         <Button
-          text="Ask"
+          text={t('settings.askButton')}
           onPress={onAsk}
           loading={loading}
           disabled={!question.trim() || loading}
         />
-        {error && <Text style={styles.error}>Error: {error}</Text>}
-        {answer && <Text style={styles.answer}>{answer}</Text>}
-      </View>
+        {error && (
+          <Text style={styles.error}>
+            {t('common.error')}: {error}
+          </Text>
+        )}
+        {answer && (
+          <View style={styles.answerBox}>
+            <Text style={styles.answer}>{answer}</Text>
+          </View>
+        )}
+      </ScrollView>
     </ScreenLayout>
   );
 }
@@ -56,6 +77,7 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.md,
     gap: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   label: {
     color: colors.textMuted,
@@ -73,13 +95,15 @@ const styles = StyleSheet.create({
     minHeight: 80,
     textAlignVertical: 'top',
   },
+  answerBox: {
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
   answer: {
     color: colors.text,
     fontSize: 14,
     lineHeight: 20,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: radius.md,
   },
   error: {
     color: colors.danger,

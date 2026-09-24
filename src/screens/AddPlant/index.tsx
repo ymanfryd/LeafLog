@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import {launchCamera, type Asset} from 'react-native-image-picker';
+import {useTranslation} from 'react-i18next';
 
 function Row({label, value}: {label: string; value: string}) {
   return (
@@ -30,18 +31,21 @@ function Row({label, value}: {label: string; value: string}) {
 }
 
 function AnalysisCard({analysis}: {analysis: PlantAnalysis}) {
+  const {t} = useTranslation();
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{analysis.species}</Text>
       <Row
-        label="Watering"
-        value={`every ${analysis.wateringIntervalDays} days`}
+        label={t('analysis.watering')}
+        value={t('analysis.wateringInterval', {
+          count: analysis.wateringIntervalDays,
+        })}
       />
-      <Row label="Light" value={analysis.lightRequirement} />
-      <Row label="Humidity" value={analysis.humidityRequirement} />
+      <Row label={t('analysis.light')} value={analysis.lightRequirement} />
+      <Row label={t('analysis.humidity')} value={analysis.humidityRequirement} />
       {analysis.issues.length > 0 && (
         <View style={styles.issues}>
-          <Text style={styles.issuesTitle}>Issues detected</Text>
+          <Text style={styles.issuesTitle}>{t('analysis.issuesTitle')}</Text>
           {analysis.issues.map((issue, i) => (
             <Text key={i} style={styles.issueText}>
               • {issue.issue} — {issue.advice}
@@ -62,6 +66,7 @@ function AddPlant() {
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [retryAttempt, setRetryAttempt] = useState(0);
+  const {t} = useTranslation();
 
   async function runAnalysis(base64: string) {
     setAnalysis(null);
@@ -104,16 +109,16 @@ function AddPlant() {
 
   return (
     <ScreenLayout
-      title={'Add plant'}
+      title={t('addPlant.title')}
       rightSlot={<CloseButton onPress={navigation.goBack} />}>
       {chosenPhoto ? (
         <ScrollView contentContainerStyle={styles.form}>
           <Image source={{uri: chosenPhoto.uri}} style={styles.photo} />
-          <Text style={styles.label}>Name</Text>
+          <Text style={styles.label}>{t('addPlant.name')}</Text>
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder="Plant name"
+            placeholder={t('addPlant.namePlaceholder')}
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
@@ -122,8 +127,8 @@ function AddPlant() {
               <ActivityIndicator color={colors.primary} />
               <Text style={styles.analyzingText}>
                 {retryAttempt === 0
-                  ? 'Analyzing plant…'
-                  : `Server busy, retrying (${retryAttempt}/3)…`}
+                  ? t('addPlant.analyzing')
+                  : t('addPlant.retrying', {attempt: retryAttempt})}
               </Text>
             </View>
           )}
@@ -131,7 +136,7 @@ function AddPlant() {
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{analyzeError}</Text>
               <Button
-                text="Try again"
+                text={t('common.tryAgain')}
                 onPress={() => {
                   if (chosenPhoto?.base64) runAnalysis(chosenPhoto.base64);
                 }}
@@ -142,7 +147,7 @@ function AddPlant() {
             <>
               <AnalysisCard analysis={analysis} />
               <Button
-                text={'Save'}
+                text={t('common.save')}
                 onPress={onSave}
                 loading={isPending}
                 disabled={!name.trim() || isPending}
@@ -152,7 +157,7 @@ function AddPlant() {
         </ScrollView>
       ) : (
         <Pressable style={styles.pressableContainer} onPress={onTakePhoto}>
-          <Text style={styles.emptyText}>Tap to take photo</Text>
+          <Text style={styles.emptyText}>{t('addPlant.takePhoto')}</Text>
         </Pressable>
       )}
     </ScreenLayout>

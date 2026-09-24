@@ -6,6 +6,7 @@ import Button from '@/ui/Button';
 import {usePlantById} from '@/hooks/usePlantById';
 import {useDeletePlant} from '@/hooks/useDeletePlant';
 import CloseButton from '@/ui/CloseButton';
+import {useTranslation} from 'react-i18next';
 
 type Props = StaticScreenProps<{id: string}>;
 
@@ -14,14 +15,15 @@ function PlantDetail({route}: Props) {
   const navigation = useNavigation();
   const {data: plant, isLoading} = usePlantById(id);
   const {mutate: deletePlant, isPending: isDeleting} = useDeletePlant();
+  const {t} = useTranslation();
 
   const closeButton = <CloseButton onPress={navigation.goBack} />;
 
   if (isLoading) {
     return (
-      <ScreenLayout title="Plant" rightSlot={closeButton}>
+      <ScreenLayout title={t('plantDetail.title')} rightSlot={closeButton}>
         <View style={styles.centered}>
-          <Text style={styles.mutedText}>Loading…</Text>
+          <Text style={styles.mutedText}>{t('common.loading')}</Text>
         </View>
       </ScreenLayout>
     );
@@ -29,27 +31,31 @@ function PlantDetail({route}: Props) {
 
   if (!plant) {
     return (
-      <ScreenLayout title="Plant" rightSlot={closeButton}>
+      <ScreenLayout title={t('plantDetail.title')} rightSlot={closeButton}>
         <View style={styles.centered}>
-          <Text style={styles.mutedText}>Plant not found</Text>
+          <Text style={styles.mutedText}>{t('plantDetail.notFound')}</Text>
         </View>
       </ScreenLayout>
     );
   }
 
   const onDelete = () => {
-    Alert.alert('Delete plant?', `${plant.name} will be permanently removed.`, [
-      {text: 'Cancel', style: 'cancel'},
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          deletePlant(plant.id, {
-            onSuccess: () => navigation.goBack(),
-          });
+    Alert.alert(
+      t('plantDetail.deleteAlertTitle'),
+      t('plantDetail.deleteAlertBody', {name: plant.name}),
+      [
+        {text: t('common.cancel'), style: 'cancel'},
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            deletePlant(plant.id, {
+              onSuccess: () => navigation.goBack(),
+            });
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   return (
@@ -64,7 +70,7 @@ function PlantDetail({route}: Props) {
         )}
 
         <Button
-          text="Delete plant"
+          text={t('plantDetail.deleteButton')}
           color={colors.danger}
           onPress={onDelete}
           loading={isDeleting}
