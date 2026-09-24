@@ -1,0 +1,46 @@
+{
+  "common": {
+    "loading": "Загрузка…",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "save": "Сохранить",
+    "tryAgain": "Попробовать снова",
+    "error": "Ошибка"
+  },
+  "plants": {
+    "title": "Растения",
+    "loadError": "Не удалось загрузить растения",
+    "emptyTitle": "Пока нет растений",
+    "emptyHint": "Нажми + чтобы добавить первое растение"
+  },
+  "plantDetail": {
+    "title": "Растение",
+    "notFound": "Растение не найдено",
+    "deleteButton": "Удалить растение",
+    "deleteAlertTitle": "Удалить растение?",
+    "deleteAlertBody": "«{{name}}» будет удалено безвозвратно."
+  },
+  "addPlant": {
+    "title": "Новое растение",
+    "takePhoto": "Нажми чтобы сделать фото",
+    "name": "Название",
+    "namePlaceholder": "Название растения",
+    "analyzing": "Анализирую растение…",
+    "retrying": "Сервер занят, повтор ({{attempt}}/3)…"
+  },
+  "analysis": {
+    "watering": "Полив",
+    "light": "Свет",
+    "humidity": "Влажность",
+    "wateringInterval_one": "каждый день",
+    "wateringInterval_few": "каждые {{count}} дня",
+    "wateringInterval_many": "каждые {{count}} дней",
+    "issuesTitle": "Обнаружены проблемы"
+  },
+  "settings": {
+    "title": "Настройки",
+    "askLabel": "Спроси AI о растениях",
+    "askPlaceholder": "Почему у моего фикуса желтеют листья?",
+    "askButton": "Спросить"
+  }
+}

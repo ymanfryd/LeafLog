@@ -4,6 +4,7 @@
 
 import 'react-native-get-random-values';
 import 'web-streams-polyfill/polyfill';
+import '@/i18n';
 
 import {AppRegistry} from 'react-native';
 import App from './App';

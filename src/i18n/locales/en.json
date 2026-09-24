@@ -1,0 +1,45 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "tryAgain": "Try again",
+    "error": "Error"
+  },
+  "plants": {
+    "title": "Plants",
+    "loadError": "Error while getting plants",
+    "emptyTitle": "No plants yet",
+    "emptyHint": "Tap + to add your first plant"
+  },
+  "plantDetail": {
+    "title": "Plant",
+    "notFound": "Plant not found",
+    "deleteButton": "Delete plant",
+    "deleteAlertTitle": "Delete plant?",
+    "deleteAlertBody": "{{name}} will be permanently removed."
+  },
+  "addPlant": {
+    "title": "Add plant",
+    "takePhoto": "Tap to take photo",
+    "name": "Name",
+    "namePlaceholder": "Plant name",
+    "analyzing": "Analyzing plant…",
+    "retrying": "Server busy, retrying ({{attempt}}/3)…"
+  },
+  "analysis": {
+    "watering": "Watering",
+    "light": "Light",
+    "humidity": "Humidity",
+    "wateringInterval_one": "every day",
+    "wateringInterval_other": "every {{count}} days",
+    "issuesTitle": "Issues detected"
+  },
+  "settings": {
+    "title": "Settings",
+    "askLabel": "Ask AI about plants",
+    "askPlaceholder": "Why are my ficus leaves yellow?",
+    "askButton": "Ask"
+  }
+}

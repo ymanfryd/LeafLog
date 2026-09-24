@@ -8,6 +8,7 @@ import IconButton from '@/ui/IconButton';
 import {StaticParamList, useNavigation} from '@react-navigation/native';
 import PlantsStack from '@/navigation/PlantsStack';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useTranslation} from 'react-i18next';
 
 type PlantsStackParams = StaticParamList<typeof PlantsStack>;
 
@@ -15,17 +16,18 @@ const PlantsList = () => {
   const {data: plants, isLoading, isError} = usePlants();
   const navigation =
     useNavigation<NativeStackNavigationProp<PlantsStackParams>>();
+  const {t} = useTranslation();
 
   return (
     <ScreenLayout
-      title="Plants"
+      title={t('plants.title')}
       rightSlot={
         <IconButton onPress={() => navigation.navigate('AddPlant')} />
       }>
       {isLoading ? (
         <ActivityIndicator color={colors.primary} />
       ) : isError ? (
-        <Text style={styles.errorText}>Error while getting plants</Text>
+        <Text style={styles.errorText}>{t('plants.loadError')}</Text>
       ) : plants && plants.length > 0 ? (
         <FlashList
           data={plants}
@@ -41,8 +43,8 @@ const PlantsList = () => {
         />
       ) : (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No plants yet</Text>
-          <Text style={styles.emptyHint}>Tap + to add your first plant</Text>
+          <Text style={styles.emptyText}>{t('plants.emptyTitle')}</Text>
+          <Text style={styles.emptyHint}>{t('plants.emptyHint')}</Text>
         </View>
       )}
     </ScreenLayout>
