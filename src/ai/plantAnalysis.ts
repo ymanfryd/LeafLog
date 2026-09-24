@@ -1,4 +1,5 @@
 import {ai} from './client';
+import {retry} from './retry';
 import type {PlantAnalysis} from './types';
 import {Type} from '@google/genai';
 
@@ -52,26 +53,32 @@ const PROMPT = `Analyze this houseplant photo. Identify the species. Assess heal
 
 export async function analyzePlant(
   imageBase64: string,
+  options: {onRetry?: (attempt: number) => void} = {},
 ): Promise<PlantAnalysis> {
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.6-flash',
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {inlineData: {mimeType: 'image/jpeg', data: imageBase64}},
-          {text: PROMPT},
+  return retry(
+    async () => {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {inlineData: {mimeType: 'image/jpeg', data: imageBase64}},
+              {text: PROMPT},
+            ],
+          },
         ],
-      },
-    ],
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema,
-    },
-  });
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema,
+        },
+      });
 
-  if (!response.text) {
-    throw new Error('Empty response from Gemini');
-  }
-  return JSON.parse(response.text) as PlantAnalysis;
+      if (!response.text) {
+        throw new Error('Empty response from Gemini');
+      }
+      return JSON.parse(response.text) as PlantAnalysis;
+    },
+    {onRetry: options.onRetry},
+  );
 }

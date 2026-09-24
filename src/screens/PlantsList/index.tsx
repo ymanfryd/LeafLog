@@ -13,10 +13,11 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 type PlantsStackParams = StaticParamList<typeof PlantsStack>;
 
 const PlantsList = () => {
-  const {data: plants, isLoading, isError} = usePlants();
+  const {data: plants, isLoading, isError, error} = usePlants();
   const {mutate: deletePlant} = useDeletePlant();
   const navigation =
     useNavigation<NativeStackNavigationProp<PlantsStackParams>>();
+  if (error) console.error(error);
 
   return (
     <ScreenLayout
