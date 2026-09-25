@@ -5,5 +5,9 @@ export async function savePhoto(sourceUri: string): Promise<string> {
   const filename = `plant-${uuidv4()}.jpg`;
   const destPath = `${RNFS.DocumentDirectoryPath}/${filename}`;
   await RNFS.copyFile(sourceUri, destPath);
-  return `file://${destPath}`;
+  return filename;
+}
+
+export function resolvePhotoUri(filename: string): string {
+  return `file://${RNFS.DocumentDirectoryPath}/${filename}`;
 }

@@ -1,0 +1,28 @@
+diff --git a/node_modules/react-native-image-picker/ios/ImagePickerManager.mm b/node_modules/react-native-image-picker/ios/ImagePickerManager.mm
+index 93e99be..c996963 100644
+--- a/node_modules/react-native-image-picker/ios/ImagePickerManager.mm
++++ b/node_modules/react-native-image-picker/ios/ImagePickerManager.mm
+@@ -485,7 +485,10 @@ CGImagePropertyOrientation CGImagePropertyOrientationForUIImageOrientation(UIIma
+ {
+     dispatch_async(dispatch_get_main_queue(), ^{
+         [picker dismissViewControllerAnimated:YES completion:^{
+-            self.callback(@[@{@"didCancel": @YES}]);
++            if (self.callback) {
++                self.callback(@[@{@"didCancel": @YES}]);
++                self.callback = nil;
++            }
+         }];
+     });
+ }
+@@ -496,7 +499,10 @@ CGImagePropertyOrientation CGImagePropertyOrientationForUIImageOrientation(UIIma
+ 
+ - (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
+ {
+-    self.callback(@[@{@"didCancel": @YES}]);
++    if (self.callback) {
++        self.callback(@[@{@"didCancel": @YES}]);
++        self.callback = nil;
++    }
+ }
+ 
+ @end

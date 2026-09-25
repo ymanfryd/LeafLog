@@ -1,6 +1,7 @@
 import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import {colors, radius, spacing} from '@/theme';
 import type {Plant} from '@/db/types';
+import {resolvePhotoUri} from '@/utils/photoStorage';
 
 type Props = {
   item: Plant;
@@ -11,7 +12,10 @@ export default function PlantCard({item, onPress}: Props) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       {item.photoUri ? (
-        <Image source={{uri: item.photoUri}} style={styles.photo} />
+        <Image
+          source={{uri: resolvePhotoUri(item.photoUri)}}
+          style={styles.photo}
+        />
       ) : (
         <View style={[styles.photo, styles.photoPlaceholder]}>
           <Text style={styles.placeholderEmoji}>🌿</Text>

@@ -7,6 +7,7 @@ import {usePlantById} from '@/hooks/usePlantById';
 import {useDeletePlant} from '@/hooks/useDeletePlant';
 import CloseButton from '@/ui/CloseButton';
 import {useTranslation} from 'react-i18next';
+import {resolvePhotoUri} from '@/utils/photoStorage';
 
 type Props = StaticScreenProps<{id: string}>;
 
@@ -62,7 +63,10 @@ function PlantDetail({route}: Props) {
     <ScreenLayout title={plant.name} rightSlot={closeButton}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {plant.photoUri ? (
-          <Image source={{uri: plant.photoUri}} style={styles.heroPhoto} />
+          <Image
+            source={{uri: resolvePhotoUri(plant.photoUri)}}
+            style={styles.heroPhoto}
+          />
         ) : (
           <View style={[styles.heroPhoto, styles.photoPlaceholder]}>
             <Text style={styles.placeholderEmoji}>🌿</Text>
