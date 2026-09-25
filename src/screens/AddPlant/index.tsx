@@ -143,16 +143,14 @@ function AddPlant() {
               />
             </View>
           )}
-          {analysis && (
-            <>
-              <AnalysisCard analysis={analysis} />
-              <Button
-                text={t('common.save')}
-                onPress={onSave}
-                loading={isPending}
-                disabled={!name.trim() || isPending}
-              />
-            </>
+          {analysis && <AnalysisCard analysis={analysis} />}
+          {!analyzing && (
+            <Button
+              text={t('common.save')}
+              onPress={onSave}
+              loading={isPending}
+              disabled={!name.trim() || isPending}
+            />
           )}
         </ScrollView>
       ) : (

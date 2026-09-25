@@ -1,4 +1,4 @@
-import {ai} from './client';
+import {ai, GEMINI_MODEL} from './client';
 import {retry} from './retry';
 import type {PlantAnalysis} from './types';
 import {Type} from '@google/genai';
@@ -58,7 +58,7 @@ export async function analyzePlant(
   return retry(
     async () => {
       const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: GEMINI_MODEL,
         contents: [
           {
             role: 'user',
