@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {launchCamera, type Asset} from 'react-native-image-picker';
 import {useTranslation} from 'react-i18next';
+import {useCreatePlantCheck} from '@/hooks/useCreatePlantCheck';
 
 function Row({label, value}: {label: string; value: string}) {
   return (
@@ -42,7 +43,10 @@ function AnalysisCard({analysis}: {analysis: PlantAnalysis}) {
         })}
       />
       <Row label={t('analysis.light')} value={analysis.lightRequirement} />
-      <Row label={t('analysis.humidity')} value={analysis.humidityRequirement} />
+      <Row
+        label={t('analysis.humidity')}
+        value={analysis.humidityRequirement}
+      />
       {analysis.issues.length > 0 && (
         <View style={styles.issues}>
           <Text style={styles.issuesTitle}>{t('analysis.issuesTitle')}</Text>
@@ -60,13 +64,15 @@ function AnalysisCard({analysis}: {analysis: PlantAnalysis}) {
 function AddPlant() {
   const navigation = useNavigation();
   const {mutateAsync: createPlant, isPending} = useCreatePlant();
+  const {mutateAsync: createPlantCheck, isPending: isPlantCheckPending} =
+    useCreatePlantCheck();
   const [chosenPhoto, setChosenPhoto] = useState<Asset | null>(null);
   const [analysis, setAnalysis] = useState<PlantAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [retryAttempt, setRetryAttempt] = useState(0);
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
 
   async function runAnalysis(base64: string) {
     setAnalysis(null);
@@ -76,6 +82,7 @@ function AddPlant() {
     try {
       const result = await analyzePlant(base64, {
         onRetry: setRetryAttempt,
+        language: i18n.language,
       });
       setAnalysis(result);
       setName(prev => prev.trim() || result.commonName);
@@ -101,11 +108,37 @@ function AddPlant() {
   };
 
   async function onSave() {
-    if (!chosenPhoto || !chosenPhoto.uri) return;
+    if (!chosenPhoto?.uri) return;
     const permanentUri = await savePhoto(chosenPhoto.uri);
-    await createPlant({name: name.trim(), photoUri: permanentUri});
+
+    const plant = await createPlant({
+      name: name.trim(),
+      photoUri: permanentUri,
+      species: analysis?.species ?? null,
+      commonName: analysis?.commonName ?? null,
+      wateringIntervalDays: analysis?.wateringIntervalDays ?? null,
+      lightRequirement: analysis?.lightRequirement ?? null,
+      humidityRequirement: analysis?.humidityRequirement ?? null,
+    });
+
+    if (analysis) {
+      await createPlantCheck({
+        plantId: plant.id,
+        photoUri: permanentUri,
+        species: analysis.species,
+        commonName: analysis.commonName,
+        wateringIntervalDays: analysis.wateringIntervalDays,
+        lightRequirement: analysis.lightRequirement,
+        humidityRequirement: analysis.humidityRequirement,
+        healthStatus: analysis.healthStatus,
+        issues: analysis.issues,
+      });
+    }
+
     navigation.goBack();
   }
+
+  const isSaving = isPending || isPlantCheckPending;
 
   return (
     <ScreenLayout
@@ -148,8 +181,8 @@ function AddPlant() {
             <Button
               text={t('common.save')}
               onPress={onSave}
-              loading={isPending}
-              disabled={!name.trim() || isPending}
+              loading={isSaving}
+              disabled={!name.trim() || isSaving}
             />
           )}
         </ScrollView>

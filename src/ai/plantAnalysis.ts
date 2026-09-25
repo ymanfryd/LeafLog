@@ -49,12 +49,15 @@ const responseSchema = {
   ],
 };
 
-const PROMPT = `Analyze this houseplant photo. Identify the species. Assess health from the visible leaves, stems, and soil (if visible). Return watering, light and humidity requirements. If there are visible issues (yellowing, spots, wilting, pests), list them with cause and advice. Otherwise leave issues empty. Return response in English.`;
-
 export async function analyzePlant(
   imageBase64: string,
-  options: {onRetry?: (attempt: number) => void} = {},
+  options: {
+    onRetry?: (attempt: number) => void;
+    language?: string;
+  } = {},
 ): Promise<PlantAnalysis> {
+  const languageName = options.language === 'ru' ? 'Russian' : 'English';
+  const prompt = `Analyze this houseplant photo. Identify the species. Assess health from the visible leaves, stems, and soil (if visible). Return watering, light and humidity requirements. If there are visible issues (yellowing, spots, wilting, pests), list them with cause and advice. Otherwise leave issues empty. Return all text values in ${languageName}.`;
   return retry(
     async () => {
       const response = await ai.models.generateContent({
@@ -64,7 +67,7 @@ export async function analyzePlant(
             role: 'user',
             parts: [
               {inlineData: {mimeType: 'image/jpeg', data: imageBase64}},
-              {text: PROMPT},
+              {text: prompt},
             ],
           },
         ],
