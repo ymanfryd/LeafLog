@@ -21,6 +21,14 @@ import {
 import {launchCamera, type Asset} from 'react-native-image-picker';
 import {useTranslation} from 'react-i18next';
 import {useCreatePlantCheck} from '@/hooks/useCreatePlantCheck';
+import {usePlural} from '@/i18n/usePlural';
+type Level = 'low' | 'medium' | 'high';
+
+const LEVEL_COUNT: Record<Level, number> = {low: 1, medium: 2, high: 3};
+
+export function levelBar(level: Level, symbol: string): string {
+  return symbol.repeat(LEVEL_COUNT[level]);
+}
 
 function Row({label, value}: {label: string; value: string}) {
   return (
@@ -33,19 +41,21 @@ function Row({label, value}: {label: string; value: string}) {
 
 function AnalysisCard({analysis}: {analysis: PlantAnalysis}) {
   const {t} = useTranslation();
+  const tp = usePlural();
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{analysis.species}</Text>
       <Row
         label={t('analysis.watering')}
-        value={t('analysis.wateringInterval', {
-          count: analysis.wateringIntervalDays,
-        })}
+        value={tp('analysis.wateringInterval', analysis.wateringIntervalDays)}
       />
-      <Row label={t('analysis.light')} value={analysis.lightRequirement} />
+      <Row
+        label={t('analysis.light')}
+        value={levelBar(analysis.lightRequirement as Level, '☀️')}
+      />
       <Row
         label={t('analysis.humidity')}
-        value={analysis.humidityRequirement}
+        value={levelBar(analysis.humidityRequirement as Level, '💧')}
       />
       {analysis.issues.length > 0 && (
         <View style={styles.issues}>
@@ -261,7 +271,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
     fontWeight: '500',
-    textTransform: 'capitalize',
   },
   issues: {
     marginTop: spacing.sm,
@@ -274,7 +283,6 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 12,
     fontWeight: '600',
-    textTransform: 'uppercase',
     letterSpacing: 1,
   },
   issueText: {
