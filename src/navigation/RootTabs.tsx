@@ -1,8 +1,8 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {StyleSheet, Text} from 'react-native';
 import {colors} from '@/theme';
-import Settings from '@/screens/Settings';
 import PlantsStack from './PlantsStack';
+import SettingsStack from './SettingsStack';
 import {useTranslation} from 'react-i18next';
 
 function TabLabel({textKey, color}: {textKey: string; color: string}) {
@@ -28,7 +28,7 @@ export const RootTabs = createBottomTabNavigator({
       },
     },
     Settings: {
-      screen: Settings,
+      screen: SettingsStack,
       options: {
         tabBarLabel: ({color}) => (
           <TabLabel textKey="settings.title" color={color} />

@@ -48,8 +48,6 @@
   },
   "settings": {
     "title": "Настройки",
-    "askLabel": "Спроси AI о растениях",
-    "askPlaceholder": "Почему у моего фикуса желтеют листья?",
-    "askButton": "Спросить"
+    "language": "Язык"
   }
 }

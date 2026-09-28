@@ -1,71 +1,38 @@
-import {useState} from 'react';
+import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+  useNavigation,
+  type StaticParamList,
+} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import ScreenLayout from '@/ui/ScreenLayout';
-import Button from '@/ui/Button';
-import {askQuestion} from '@/ai/askQuestion';
 import {colors, radius, spacing} from '@/theme';
 import {useTranslation} from 'react-i18next';
+import {useLanguage} from '@/i18n/useLanguage';
+import {SettingsStack} from '@/navigation/SettingsStack';
+
+type SettingsStackParams = StaticParamList<typeof SettingsStack>;
 
 function Settings() {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const {t} = useTranslation();
+  const {language, languages} = useLanguage();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<SettingsStackParams>>();
 
-  const onAsk = async () => {
-    Keyboard.dismiss();
-    setLoading(true);
-    setError(null);
-    setAnswer('');
-    try {
-      const result = await askQuestion(question);
-      setAnswer(result);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const currentLanguageLabel =
+    languages.find(l => l.code === language)?.label ?? language;
 
   return (
     <ScreenLayout title={t('settings.title')}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag">
-        <Text style={styles.label}>{t('settings.askLabel')}</Text>
-        <TextInput
-          value={question}
-          onChangeText={setQuestion}
-          placeholder={t('settings.askPlaceholder')}
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
-          multiline
-        />
-        <Button
-          text={t('settings.askButton')}
-          onPress={onAsk}
-          loading={loading}
-          disabled={!question.trim() || loading}
-        />
-        {error && (
-          <Text style={styles.error}>
-            {t('common.error')}: {error}
-          </Text>
-        )}
-        {answer && (
-          <View style={styles.answerBox}>
-            <Text style={styles.answer}>{answer}</Text>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Pressable
+          style={({pressed}) => [styles.row, pressed && styles.rowPressed]}
+          onPress={() => navigation.navigate('LanguagePicker')}>
+          <Text style={styles.rowLabel}>{t('settings.language')}</Text>
+          <View style={styles.rowRight}>
+            <Text style={styles.rowValue}>{currentLanguageLabel}</Text>
+            <Text style={styles.chevron}>›</Text>
           </View>
-        )}
+        </Pressable>
       </ScrollView>
     </ScreenLayout>
   );
@@ -76,37 +43,34 @@ export default Settings;
 const styles = StyleSheet.create({
   container: {
     padding: spacing.md,
-    gap: spacing.md,
-    paddingBottom: spacing.xxl,
+    gap: spacing.sm,
   },
-  label: {
-    color: colors.textMuted,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '600',
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.text,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: spacing.md,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
+  },
+  rowPressed: {
+    backgroundColor: colors.surfaceElevated,
+  },
+  rowLabel: {
+    color: colors.text,
     fontSize: 16,
-    minHeight: 80,
-    textAlignVertical: 'top',
   },
-  answerBox: {
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: radius.md,
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
-  answer: {
-    color: colors.text,
-    fontSize: 14,
-    lineHeight: 20,
+  rowValue: {
+    color: colors.textMuted,
+    fontSize: 15,
   },
-  error: {
-    color: colors.danger,
-    fontSize: 14,
+  chevron: {
+    color: colors.textMuted,
+    fontSize: 20,
   },
 });
