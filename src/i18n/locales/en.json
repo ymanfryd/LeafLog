@@ -18,7 +18,15 @@
     "notFound": "Plant not found",
     "deleteButton": "Delete plant",
     "deleteAlertTitle": "Delete plant?",
-    "deleteAlertBody": "{{name}} will be permanently removed."
+    "deleteAlertBody": "{{name}} will be permanently removed.",
+    "care": "Care",
+    "health": "Health",
+    "notes": "Notes",
+    "status": {
+      "healthy": "🌱 Healthy",
+      "warning": "⚠️ Warning",
+      "critical": "🆘 Critical"
+    }
   },
   "addPlant": {
     "title": "Add plant",

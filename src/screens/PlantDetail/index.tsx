@@ -3,20 +3,49 @@ import {useNavigation, type StaticScreenProps} from '@react-navigation/native';
 import {colors, radius, spacing} from '@/theme';
 import ScreenLayout from '@/ui/ScreenLayout';
 import Button from '@/ui/Button';
+import CloseButton from '@/ui/CloseButton';
 import {usePlantById} from '@/hooks/usePlantById';
 import {useDeletePlant} from '@/hooks/useDeletePlant';
-import CloseButton from '@/ui/CloseButton';
-import {useTranslation} from 'react-i18next';
+import {useLatestCheckByPlantId} from '@/hooks/useLatestCheck';
 import {resolvePhotoUri} from '@/utils/photoStorage';
+import {useTranslation} from 'react-i18next';
+import {usePlural} from '@/i18n/usePlural';
 
 type Props = StaticScreenProps<{id: string}>;
+type Level = 'low' | 'medium' | 'high';
+
+const LEVEL_COUNT: Record<Level, number> = {low: 1, medium: 2, high: 3};
+
+function Row({label, value}: {label: string; value: string}) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={styles.rowValue}>{value}</Text>
+    </View>
+  );
+}
+
+function HealthPill({status}: {status: 'healthy' | 'warning' | 'critical'}) {
+  const {t} = useTranslation();
+  return (
+    <View style={[styles.pill, styles[`pill_${status}`]]}>
+      <Text style={styles.pillText}>{t(`plantDetail.status.${status}`)}</Text>
+    </View>
+  );
+}
+
+export function levelBar(level: Level, symbol: string): string {
+  return symbol.repeat(LEVEL_COUNT[level]);
+}
 
 function PlantDetail({route}: Props) {
   const {id} = route.params;
   const navigation = useNavigation();
   const {data: plant, isLoading} = usePlantById(id);
+  const {data: latestCheck} = useLatestCheckByPlantId(id);
   const {mutate: deletePlant, isPending: isDeleting} = useDeletePlant();
   const {t} = useTranslation();
+  const tp = usePlural();
 
   const closeButton = <CloseButton onPress={navigation.goBack} />;
 
@@ -50,15 +79,19 @@ function PlantDetail({route}: Props) {
           text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
-            deletePlant(plant.id, {
-              onSuccess: () => navigation.goBack(),
-            });
+            deletePlant(plant.id, {onSuccess: () => navigation.goBack()});
           },
         },
       ],
     );
   };
 
+  const hasCareInfo =
+    plant.wateringIntervalDays !== null ||
+    plant.lightRequirement !== null ||
+    plant.humidityRequirement !== null;
+
+  const hasIssues = latestCheck?.issues && latestCheck.issues.length > 0;
   return (
     <ScreenLayout title={plant.name} rightSlot={closeButton}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -70,6 +103,65 @@ function PlantDetail({route}: Props) {
         ) : (
           <View style={[styles.heroPhoto, styles.photoPlaceholder]}>
             <Text style={styles.placeholderEmoji}>🌿</Text>
+          </View>
+        )}
+
+        <View style={styles.subheader}>
+          {plant.commonName && plant.commonName !== plant.name && (
+            <Text style={styles.commonName}>{plant.commonName}</Text>
+          )}
+          {plant.species && <Text style={styles.species}>{plant.species}</Text>}
+        </View>
+
+        {hasCareInfo && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('plantDetail.care')}</Text>
+            {plant.wateringIntervalDays !== null && (
+              <Row
+                label={t('analysis.watering')}
+                value={tp(
+                  'analysis.wateringInterval',
+                  plant.wateringIntervalDays,
+                )}
+              />
+            )}
+            {plant.lightRequirement && (
+              <Row
+                label={t('analysis.light')}
+                value={levelBar(plant.lightRequirement as Level, '☀️')}
+              />
+            )}
+            {plant.humidityRequirement && (
+              <Row
+                label={t('analysis.humidity')}
+                value={levelBar(plant.humidityRequirement as Level, '💧')}
+              />
+            )}
+          </View>
+        )}
+
+        {latestCheck?.healthStatus && (
+          <View style={styles.card}>
+            <View style={styles.healthHeader}>
+              <Text style={styles.cardTitle}>{t('plantDetail.health')}</Text>
+              <HealthPill status={latestCheck.healthStatus} />
+            </View>
+            {hasIssues && (
+              <View style={styles.issues}>
+                {latestCheck.issues!.map((issue, i) => (
+                  <Text key={i} style={styles.issueText}>
+                    • {issue.issue} — {issue.advice}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {plant.notes && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{t('plantDetail.notes')}</Text>
+            <Text style={styles.notesText}>{plant.notes}</Text>
           </View>
         )}
 
@@ -90,7 +182,7 @@ export default PlantDetail;
 const styles = StyleSheet.create({
   scroll: {
     padding: spacing.md,
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   centered: {
     flex: 1,
@@ -114,5 +206,86 @@ const styles = StyleSheet.create({
   },
   placeholderEmoji: {
     fontSize: 80,
+  },
+  subheader: {
+    gap: spacing.xs,
+  },
+  commonName: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  species: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  cardTitle: {
+    color: colors.textMuted,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '600',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+  },
+  rowLabel: {
+    color: colors.textMuted,
+    fontSize: 13,
+  },
+  rowValue: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '500',
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  healthHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs / 2,
+    borderRadius: radius.full,
+  },
+  pill_healthy: {
+    backgroundColor: colors.success + '30',
+  },
+  pill_warning: {
+    backgroundColor: colors.primary + '30',
+  },
+  pill_critical: {
+    backgroundColor: colors.danger + '30',
+  },
+  pillText: {
+    color: colors.text,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  issues: {
+    marginTop: spacing.xs,
+    gap: spacing.xs,
+  },
+  issueText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  notesText: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
