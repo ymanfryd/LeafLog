@@ -46,8 +46,6 @@
   },
   "settings": {
     "title": "Settings",
-    "askLabel": "Ask AI about plants",
-    "askPlaceholder": "Why are my ficus leaves yellow?",
-    "askButton": "Ask"
+    "language": "Language"
   }
 }
