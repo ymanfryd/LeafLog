@@ -18,7 +18,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {launchCamera, type Asset} from 'react-native-image-picker';
+import {
+  launchCamera,
+  launchImageLibrary,
+  type Asset,
+} from 'react-native-image-picker';
 import {useTranslation} from 'react-i18next';
 import {useCreatePlantCheck} from '@/hooks/useCreatePlantCheck';
 import {usePlural} from '@/i18n/usePlural';
@@ -104,17 +108,28 @@ function AddPlant() {
     }
   }
 
+  const handleAsset = async (asset: Asset | undefined) => {
+    if (!asset?.uri || !asset.base64) return;
+    setChosenPhoto(asset);
+    await runAnalysis(asset.base64);
+  };
+
   const onTakePhoto = async () => {
     const result = await launchCamera({
       mediaType: 'photo',
       quality: 0.8,
       includeBase64: true,
     });
-    const asset = result.assets?.[0];
-    if (!asset?.uri || !asset.base64) return;
+    await handleAsset(result.assets?.[0]);
+  };
 
-    setChosenPhoto(asset);
-    await runAnalysis(asset.base64);
+  const onChooseFromLibrary = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      includeBase64: true,
+    });
+    await handleAsset(result.assets?.[0]);
   };
 
   async function onSave() {
@@ -197,9 +212,25 @@ function AddPlant() {
           )}
         </ScrollView>
       ) : (
-        <Pressable style={styles.pressableContainer} onPress={onTakePhoto}>
-          <Text style={styles.emptyText}>{t('addPlant.takePhoto')}</Text>
-        </Pressable>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>📷</Text>
+          <Text style={styles.emptyTitle}>{t('addPlant.emptyTitle')}</Text>
+          <Text style={styles.emptyHint}>{t('addPlant.emptyHint')}</Text>
+          <View style={styles.emptyAction}>
+            <Button text={t('addPlant.takePhoto')} onPress={onTakePhoto} />
+            <Pressable
+              onPress={onChooseFromLibrary}
+              style={({pressed}) => [
+                styles.libraryLink,
+                pressed && styles.libraryLinkPressed,
+              ]}
+              hitSlop={8}>
+              <Text style={styles.libraryLinkText}>
+                {t('addPlant.chooseFromLibrary')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       )}
     </ScreenLayout>
   );
@@ -208,13 +239,47 @@ function AddPlant() {
 export default AddPlant;
 
 const styles = StyleSheet.create({
-  pressableContainer: {
-    flexGrow: 1,
+  emptyState: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: spacing.xl,
+    gap: spacing.md,
   },
-  emptyText: {
+  emptyIcon: {
+    fontSize: 72,
+    marginBottom: spacing.md,
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  emptyHint: {
     color: colors.textMuted,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  emptyAction: {
+    width: '100%',
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  libraryLink: {
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  libraryLinkPressed: {
+    opacity: 0.5,
+  },
+  libraryLinkText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: '500',
   },
   errorText: {
     color: colors.danger,

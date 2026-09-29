@@ -30,7 +30,10 @@
   },
   "addPlant": {
     "title": "Add plant",
-    "takePhoto": "Tap to take photo",
+    "emptyTitle": "Add a plant",
+    "emptyHint": "Take a photo of a plant. AI will identify it and suggest a care schedule.",
+    "takePhoto": "Take photo",
+    "chooseFromLibrary": "Choose from library",
     "name": "Name",
     "namePlaceholder": "Plant name",
     "analyzing": "Analyzing plant…",
