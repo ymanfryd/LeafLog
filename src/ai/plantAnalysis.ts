@@ -1,5 +1,6 @@
 import {ai, GEMINI_MODEL} from './client';
 import {retry} from './retry';
+import {classifyGeminiError} from './errors';
 import type {PlantAnalysis} from './types';
 import {Type} from '@google/genai';
 
@@ -60,27 +61,32 @@ export async function analyzePlant(
   const prompt = `Analyze this houseplant photo. Identify the species. Assess health from the visible leaves, stems, and soil (if visible). Return watering, light and humidity requirements. If there are visible issues (yellowing, spots, wilting, pests), list them with cause and advice. Otherwise leave issues empty. Return all text values in ${languageName}.`;
   return retry(
     async () => {
-      const response = await ai.models.generateContent({
-        model: GEMINI_MODEL,
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {inlineData: {mimeType: 'image/jpeg', data: imageBase64}},
-              {text: prompt},
-            ],
+      try {
+        const response = await ai.models.generateContent({
+          model: GEMINI_MODEL,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {inlineData: {mimeType: 'image/jpeg', data: imageBase64}},
+                {text: prompt},
+              ],
+            },
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema,
           },
-        ],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema,
-        },
-      });
+        });
 
-      if (!response.text) {
-        throw new Error('Empty response from Gemini');
+        if (!response.text) {
+          throw new Error('Empty response from Gemini');
+        }
+        return JSON.parse(response.text) as PlantAnalysis;
+      } catch (e) {
+        if (__DEV__) console.warn('[gemini] error:', e);
+        throw classifyGeminiError(e);
       }
-      return JSON.parse(response.text) as PlantAnalysis;
     },
     {onRetry: options.onRetry},
   );

@@ -68,6 +68,33 @@ export async function createPlant(input: NewPlant): Promise<Plant> {
   return plant;
 }
 
+export async function updatePlant(
+  id: string,
+  patch: Partial<Omit<Plant, 'id' | 'createdAt'>>,
+): Promise<void> {
+  const columnMap: Record<string, string> = {
+    name: 'name',
+    species: 'species',
+    commonName: 'common_name',
+    photoUri: 'photo_uri',
+    wateringIntervalDays: 'watering_interval_days',
+    lightRequirement: 'light_requirement',
+    humidityRequirement: 'humidity_requirement',
+    notes: 'notes',
+  };
+
+  const entries = Object.entries(patch).filter(([key]) => key in columnMap);
+  if (entries.length === 0) return;
+
+  const setClause = entries.map(([key]) => `${columnMap[key]} = ?`).join(', ');
+  const values = entries.map(([, value]) => value ?? null);
+
+  await db.execute(`UPDATE plants SET ${setClause} WHERE id = ?`, [
+    ...values,
+    id,
+  ]);
+}
+
 export async function deletePlant(id: string): Promise<void> {
   await db.execute('DELETE FROM plants WHERE id = ?', [id]);
 }

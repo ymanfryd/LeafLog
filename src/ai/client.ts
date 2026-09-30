@@ -7,4 +7,4 @@ if (!GEMINI_API_KEY) {
 
 export const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 
-export const GEMINI_MODEL = 'gemini-3.6-flash';
+export const GEMINI_MODEL = 'gemini-3.5-flash-lite';

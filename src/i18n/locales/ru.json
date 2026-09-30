@@ -16,6 +16,7 @@
   "plantDetail": {
     "title": "Растение",
     "notFound": "Растение не найдено",
+    "analyzeButton": "Проанализировать",
     "deleteButton": "Удалить растение",
     "deleteAlertTitle": "Удалить растение?",
     "deleteAlertBody": "«{{name}}» будет удалено безвозвратно.",
@@ -47,7 +48,13 @@
     "wateringInterval_few": "каждые {{count}} дня",
     "wateringInterval_many": "каждые {{count}} дней",
     "wateringInterval_other": "каждые {{count}} дней",
-    "issuesTitle": "Обнаружены проблемы"
+    "issuesTitle": "Обнаружены проблемы",
+    "errors": {
+      "quotaExceeded": "Дневной лимит AI-анализа исчерпан. Попробуй завтра.",
+      "rateLimited": "Слишком много запросов. Попробуй через {{seconds}} с.",
+      "rateLimitedShort": "Слишком много запросов. Попробуй позже.",
+      "generic": "Не удалось проанализировать. Проверь соединение и попробуй ещё раз."
+    }
   },
   "settings": {
     "title": "Настройки",

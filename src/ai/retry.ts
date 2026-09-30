@@ -1,3 +1,5 @@
+import {QuotaExceededError, RateLimitError} from './errors';
+
 export async function retry<T>(
   fn: () => Promise<T>,
   options: {
@@ -33,14 +35,14 @@ export async function retry<T>(
 }
 
 function defaultShouldRetry(error: unknown): boolean {
+  if (error instanceof QuotaExceededError) return false;
+  if (error instanceof RateLimitError) return false;
   if (!(error instanceof Error)) return false;
   const message = error.message.toLowerCase();
-  // Retry on 5xx server errors and rate limits
   return (
     message.includes('503') ||
     message.includes('502') ||
     message.includes('504') ||
-    message.includes('429') ||
     message.includes('unavailable') ||
     message.includes('timeout') ||
     message.includes('network')
