@@ -22,6 +22,7 @@ import {resolvePhotoUri, readPhotoAsBase64} from '@/utils/photoStorage';
 import {useTranslation} from 'react-i18next';
 import {usePlural} from '@/i18n/usePlural';
 import {analyzePlant} from '@/ai/plantAnalysis';
+import {analyzeErrorMessage} from '@/ai/errorMessage';
 
 type Props = StaticScreenProps<{id: string}>;
 type Level = 'low' | 'medium' | 'high';
@@ -98,7 +99,7 @@ function PlantDetail({route}: Props) {
         },
       });
     } catch (e) {
-      setAnalyzeError(e instanceof Error ? e.message : 'Analysis failed');
+      setAnalyzeError(analyzeErrorMessage(t, e));
     } finally {
       setAnalyzing(false);
       setRetryAttempt(0);

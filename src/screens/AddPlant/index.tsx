@@ -26,6 +26,7 @@ import {
 import {useTranslation} from 'react-i18next';
 import {useCreatePlantCheck} from '@/hooks/useCreatePlantCheck';
 import {usePlural} from '@/i18n/usePlural';
+import {analyzeErrorMessage} from '@/ai/errorMessage';
 type Level = 'low' | 'medium' | 'high';
 
 const LEVEL_COUNT: Record<Level, number> = {low: 1, medium: 2, high: 3};
@@ -101,7 +102,7 @@ function AddPlant() {
       setAnalysis(result);
       setName(prev => prev.trim() || result.commonName);
     } catch (e) {
-      setAnalyzeError(e instanceof Error ? e.message : 'Analysis failed');
+      setAnalyzeError(analyzeErrorMessage(t, e));
     } finally {
       setAnalyzing(false);
       setRetryAttempt(0);

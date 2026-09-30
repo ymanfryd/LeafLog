@@ -46,7 +46,13 @@
     "humidity": "Humidity",
     "wateringInterval_one": "every day",
     "wateringInterval_other": "every {{count}} days",
-    "issuesTitle": "Issues detected"
+    "issuesTitle": "Issues detected",
+    "errors": {
+      "quotaExceeded": "Daily AI analysis limit reached. Try again tomorrow.",
+      "rateLimited": "Too many requests. Try again in {{seconds}}s.",
+      "rateLimitedShort": "Too many requests. Try again later.",
+      "generic": "Analysis failed. Check your connection and try again."
+    }
   },
   "settings": {
     "title": "Settings",
