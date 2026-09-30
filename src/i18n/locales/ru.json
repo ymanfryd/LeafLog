@@ -16,6 +16,7 @@
   "plantDetail": {
     "title": "Растение",
     "notFound": "Растение не найдено",
+    "analyzeButton": "Проанализировать",
     "deleteButton": "Удалить растение",
     "deleteAlertTitle": "Удалить растение?",
     "deleteAlertBody": "«{{name}}» будет удалено безвозвратно.",

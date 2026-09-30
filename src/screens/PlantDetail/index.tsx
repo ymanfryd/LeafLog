@@ -1,4 +1,13 @@
-import {Alert, Image, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {useState} from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {useNavigation, type StaticScreenProps} from '@react-navigation/native';
 import {colors, radius, spacing} from '@/theme';
 import ScreenLayout from '@/ui/ScreenLayout';
@@ -7,9 +16,12 @@ import CloseButton from '@/ui/CloseButton';
 import {usePlantById} from '@/hooks/usePlantById';
 import {useDeletePlant} from '@/hooks/useDeletePlant';
 import {useLatestCheckByPlantId} from '@/hooks/useLatestCheck';
-import {resolvePhotoUri} from '@/utils/photoStorage';
+import {useCreatePlantCheck} from '@/hooks/useCreatePlantCheck';
+import {useUpdatePlant} from '@/hooks/useUpdatePlant';
+import {resolvePhotoUri, readPhotoAsBase64} from '@/utils/photoStorage';
 import {useTranslation} from 'react-i18next';
 import {usePlural} from '@/i18n/usePlural';
+import {analyzePlant} from '@/ai/plantAnalysis';
 
 type Props = StaticScreenProps<{id: string}>;
 type Level = 'low' | 'medium' | 'high';
@@ -44,8 +56,54 @@ function PlantDetail({route}: Props) {
   const {data: plant, isLoading} = usePlantById(id);
   const {data: latestCheck} = useLatestCheckByPlantId(id);
   const {mutate: deletePlant, isPending: isDeleting} = useDeletePlant();
-  const {t} = useTranslation();
+  const {mutateAsync: createPlantCheck} = useCreatePlantCheck();
+  const {mutateAsync: updatePlant} = useUpdatePlant();
+  const {t, i18n} = useTranslation();
   const tp = usePlural();
+
+  const [analyzing, setAnalyzing] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
+  async function onAnalyze() {
+    if (!plant?.photoUri) return;
+    setAnalyzeError(null);
+    setRetryAttempt(0);
+    setAnalyzing(true);
+    try {
+      const base64 = await readPhotoAsBase64(plant.photoUri);
+      const result = await analyzePlant(base64, {
+        onRetry: setRetryAttempt,
+        language: i18n.language,
+      });
+      await createPlantCheck({
+        plantId: plant.id,
+        photoUri: plant.photoUri,
+        species: result.species,
+        commonName: result.commonName,
+        wateringIntervalDays: result.wateringIntervalDays,
+        lightRequirement: result.lightRequirement,
+        humidityRequirement: result.humidityRequirement,
+        healthStatus: result.healthStatus,
+        issues: result.issues,
+      });
+      await updatePlant({
+        id: plant.id,
+        patch: {
+          species: result.species,
+          commonName: result.commonName,
+          wateringIntervalDays: result.wateringIntervalDays,
+          lightRequirement: result.lightRequirement,
+          humidityRequirement: result.humidityRequirement,
+        },
+      });
+    } catch (e) {
+      setAnalyzeError(e instanceof Error ? e.message : 'Analysis failed');
+    } finally {
+      setAnalyzing(false);
+      setRetryAttempt(0);
+    }
+  }
 
   const closeButton = <CloseButton onPress={navigation.goBack} />;
 
@@ -165,6 +223,34 @@ function PlantDetail({route}: Props) {
           </View>
         )}
 
+        {!latestCheck && plant.photoUri && (
+          <>
+            {analyzing ? (
+              <View style={styles.analyzingBox}>
+                <ActivityIndicator color={colors.primary} />
+                <Text style={styles.analyzingText}>
+                  {retryAttempt === 0
+                    ? t('addPlant.analyzing')
+                    : t('addPlant.retrying', {attempt: retryAttempt})}
+                </Text>
+              </View>
+            ) : (
+              <>
+                {analyzeError && (
+                  <Text style={styles.errorText}>{analyzeError}</Text>
+                )}
+                <Button
+                  text={t(
+                    analyzeError
+                      ? 'common.tryAgain'
+                      : 'plantDetail.analyzeButton',
+                  )}
+                  onPress={onAnalyze}
+                />
+              </>
+            )}
+          </>
+        )}
         <Button
           text={t('plantDetail.deleteButton')}
           color={colors.danger}
@@ -287,5 +373,22 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     lineHeight: 20,
+  },
+  analyzingBox: {
+    padding: spacing.md,
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+  },
+  analyzingText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

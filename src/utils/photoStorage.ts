@@ -11,3 +11,8 @@ export async function savePhoto(sourceUri: string): Promise<string> {
 export function resolvePhotoUri(filename: string): string {
   return `file://${RNFS.DocumentDirectoryPath}/${filename}`;
 }
+
+export function readPhotoAsBase64(filename: string): Promise<string> {
+  const path = `${RNFS.DocumentDirectoryPath}/${filename}`;
+  return RNFS.readFile(path, 'base64');
+}

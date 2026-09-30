@@ -16,6 +16,7 @@
   "plantDetail": {
     "title": "Plant",
     "notFound": "Plant not found",
+    "analyzeButton": "Analyze plant",
     "deleteButton": "Delete plant",
     "deleteAlertTitle": "Delete plant?",
     "deleteAlertBody": "{{name}} will be permanently removed.",
